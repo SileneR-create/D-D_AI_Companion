@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "DnD": {
+      "command": "python",
+      "args": [
+        "C:\\Users\\Utilisateur\\Desktop\\projet_dnd\\src\\mcp_servers\\dnd_sources_mcp\\dnd_mcp_server.py"
+      ]
+    }
+  }
+}

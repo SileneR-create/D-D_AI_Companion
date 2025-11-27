@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "gamemaster-mcp": {
+      "command": "uv",
+      "args": [
+        "run",
+        "gamemaster-mcp"
+      ],
+      "cwd": "C:\\path\\to\\your\\gamemaster-mcp"
+    }
+  }
+}
