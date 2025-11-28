@@ -1,0 +1,140 @@
+Metadata-Version: 2.4
+Name: gamemaster-mcp
+Version: 0.1.0
+Summary: A comprehensive D&D campaign management MCP server built with FastMCP 2.8.0+
+Author-email: Joel Casimir <y9agf5y5@anonaddy.me>
+License-Expression: MIT
+Project-URL: Homepage, https://github.com/study-flamingo/gamemaster-mcp
+Requires-Python: >=3.13
+Description-Content-Type: text/markdown
+Requires-Dist: fastmcp>=2.9.0
+Requires-Dist: pydantic>=2.0.0
+Requires-Dist: python-dotenv>=1.1.1
+Requires-Dist: shortuuid>=1.0.13
+Requires-Dist: typing-extensions>=4.0.0
+Requires-Dist: httpx>=0.28.1
+Requires-Dist: mcp>=1.3.0
+Requires-Dist: requests>=2.32.5
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: ruff>=0.1.0; extra == "dev"
+Requires-Dist: mypy>=1.0.0; extra == "dev"
+Requires-Dist: pre-commit>=3.0.0; extra == "dev"
+
+# 🎲 D&D AI Companion
+### *Votre assistant intelligent pour Donjons & Dragons 5e*
+
+---
+
+## 🧭 Table des matières
+1. [Présentation](#-présentation)
+2. [Fonctionnalités](#-fonctionnalités)
+3. [Architecture du projet](#-architecture-du-projet)
+4. [Technologies utilisées](#-technologies-utilisées)
+5. [Installation](#-installation)
+6. [Configuration](#-configuration)
+7. [Lancement](#-lancement)
+8. [Roadmap](#-roadmap)
+9. [Captures décran](#-captures-décran)
+10. [Licence](#-licence)
+
+---
+
+# 📘 Présentation
+
+**D&D AI Companion** est une application Python + Streamlit destinée aux joueurs et maîtres du jeu de **Donjons & Dragons 5e**.
+
+Elle fournit un ensemble d’outils intelligents pour :
+
+- un accès rapide aux règles officielles  
+- une aide à la création de personnages joueurs  
+- une génération automatique de PNJ  
+- des outils d’assistance pour les maîtres du jeu  
+- la gestion de l’initiative et des combats  
+- et bien plus…
+
+L’application utilise deux *serveurs MCP* dédiés :  
+- un serveur **Rules** (accès aux règles),  
+- un serveur **Game Master** (générations, PNJ, outils MJ).
+
+---
+
+# 🧩 Fonctionnalités
+
+### 🔍 Accès aux règles D&D 5e
+- Recherche rapide  
+- Résumé clair  
+- Informations structurées (races, classes, sorts…)
+
+### 🧙 Création de personnages
+- Suggestions automatiques  
+- Guidage étape par étape  
+- Gestion des caractéristiques, historique et équipement
+
+### 👤 Générateur de PNJ
+- Profil complet  
+- Traits uniques  
+- Idées de backstory  
+- Utilise le serveur **Gamemaster**
+
+### 📚 Outils MJ
+- Suggestions de quêtes  
+- Idées de campagne  
+- Création de lieux  
+- Liste de rencontres
+
+### ⚔️ Gestion des combats
+- Suivi d’initiative  
+- Historique des actions  
+- Outil interactif
+
+### 🤖 Chatbots spécialisés
+- Chatbot orienté règles  
+- Chatbot orienté MJ  
+- Mise en forme intelligente des réponses JSON (jamais brut)
+
+---
+
+# 🗂️ Architecture du projet
+
+D&D-AI-Companion/
+│
+├── app.py # Page principale Streamlit
+├── home.py # Page d’accueil
+│
+├── pages/
+│ ├── rules.py # Chatbot règles D&D 5e
+│ └── gamemaster.py # Chatbot MJ
+│
+├── mcp/
+│ ├── mcp-client/
+│ │ └── client.py # Client MCP
+│ │
+│ └── mcp-servers/
+│ └── server_mcp.py # Serveur MCP (rules + GM)
+│
+├── README.md # Ce fichier
+└── requirements.txt
+
+
+---
+
+# 🛠️ Technologies utilisées
+
+| Domaine | Technologie |
+|--------|-------------|
+| Langage | Python 3 |
+| Interface | Streamlit |
+| Communication | MCP (Model Context Protocol) |
+| Serveurs | MCP Rules & MCP Game Master |
+| Chatbots | Assistant IA utilisant MCP Tools |
+
+---
+
+# 📦 Installation
+
+Clonez le dépôt :
+
+```bash
+git clone https://github.com/your-repo/DnD-AI-Companion.git
+cd DnD-AI-Companion

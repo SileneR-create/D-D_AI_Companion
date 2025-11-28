@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=77.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gamemaster-mcp"
+version = "0.1.0"
+description = "A comprehensive D&D campaign management MCP server built with FastMCP 2.8.0+"
+authors = [{name = "Joel Casimir", email = "y9agf5y5@anonaddy.me"}]
+license = "MIT"
+urls = {Homepage = "https://github.com/study-flamingo/gamemaster-mcp"}
+
+license-files = ["LICENSE.md"]
+readme = "README.md"
+
+requires-python = ">=3.13"  # version la plus restrictive
+
+dependencies = [
+    "fastmcp>=2.9.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.1.1",
+    "shortuuid>=1.0.13",
+    "typing-extensions>=4.0.0",
+    "httpx>=0.28.1",
+    "mcp>=1.3.0",
+    "requests>=2.32.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+]
+
+[project.scripts]
+gamemaster-mcp = "gamemaster_mcp.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+select = ["E", "F", "I", "N", "W"]
+ignore = [
+    "E501",
+    "F403",
+]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true

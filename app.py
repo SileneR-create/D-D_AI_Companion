@@ -17,7 +17,7 @@ def init_mcp_in_thread():
     """Initialiser MCP dans un thread séparé"""
     try:
         print("DEBUG: Starting MCP initialization...", flush=True)
-        config_path = "C:\\Users\\Utilisateur\\Desktop\\projet_dnd\\server_config.json"
+        config_path = "C:\\Users\\Utilisateur\\Desktop\\projet_dnd\\D-D_AI_Companion\\server_config.json"
         
         if not os.path.exists(config_path):
             print(f"DEBUG: Config file not found: {config_path}", flush=True)
