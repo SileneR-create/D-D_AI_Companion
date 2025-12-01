@@ -22,6 +22,7 @@ DND AI Companion est un chatbot intelligent spécialisé Donjons & Dragons, con�
 ## Technologie
 
 - **Python**  
+- **Streamlit** – pour l’interface web interactive du chatbot
 - **MCP (Model Context Protocol)** – pour une intégration flexible et modulaire  
 - **RAG (Retrieval-Augmented Generation)** – pour fournir des réponses précises et contextualisées  
 - **LLM Ollama Mistral7B Instruct** – moteur de génération de texte
