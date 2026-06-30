@@ -2,9 +2,7 @@
   "mcpServers": {
     "DnD": {
       "command": "python",
-      "args": [
-        "C:\\Users\\Utilisateur\\Desktop\\projet_dnd\\D-D_AI_Companion\\src\\mcp_servers\\dnd_sources_mcp\\dnd_mcp_server.py"
-      ]
+      "args": ["src/mcp_servers/dnd_sources_mcp/dnd_mcp_server.py"]
     }
   }
 }

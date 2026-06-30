@@ -13,7 +13,7 @@ urls = {Homepage = "https://github.com/study-flamingo/gamemaster-mcp"}
 license-files = ["LICENSE.md"]
 readme = "README.md"
 
-requires-python = ">=3.13"  # version la plus restrictive
+requires-python = ">=3.12"
 
 dependencies = [
     "fastmcp>=2.9.0",

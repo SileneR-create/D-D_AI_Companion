@@ -1,12 +1,8 @@
 {
   "mcpServers": {
     "gamemaster-mcp": {
-      "command": "uv",
-      "args": [
-        "run",
-        "gamemaster-mcp"
-      ],
-      "cwd": "C:\\Users\\Utilisateur\\Desktop\\projet_dnd\\D-D_AI_Companion\\src\\mcp_servers\\gamemaster-mcp"
+      "command": "gamemaster-mcp",
+      "args": []
     }
   }
 }

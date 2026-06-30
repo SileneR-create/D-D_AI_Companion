@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import sys
 import requests
 import json
@@ -117,11 +118,16 @@ def register_resources(app, cache: APICache):
                     logger.exception(
                         f"Error prefetching item {category}/{item['index']}: {e}")
 
-    # Start prefetching common categories in the background
-    import threading
-    for category in ["spells", "equipment", "monsters", "classes", "races"]:
-        threading.Thread(target=prefetch_category_items,
-                         args=(category,), daemon=True).start()
+    # Prefetch OPT-IN. Lance au demarrage, il sature le process de milliers de
+    # requetes HTTP et empeche de repondre au handshake MCP a temps -> le client
+    # ferme la connexion ("Connection closed"). Le cache disque suffit pour un
+    # usage normal ; les details manquants sont recuperes a la demande.
+    # Mettre DND_PREFETCH=1 pour reactiver le prechargement complet.
+    if os.getenv("DND_PREFETCH") == "1":
+        import threading
+        for category in ["spells", "equipment", "monsters", "classes", "races"]:
+            threading.Thread(target=prefetch_category_items,
+                             args=(category,), daemon=True).start()
 
     @app.resource("resource://dnd/categories")
     def get_categories() -> Dict[str, Any]:

@@ -2,3 +2,35 @@ secret_api_keys.py
 pdf_rules_rag.py
 dnd_chat1.py
 dnd_chat2.py
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+.env.local
+# Node / frontend
+node_modules/
+frontend/dist/
+npm-debug.log*
+
+# Streamlit legacy (chemins absolus / experiments)
+streamlit_legacy/pages/dnd_chat1.py
+streamlit_legacy/pages/dnd_chat2.py
+
+# Documents RAG uploades par l utilisateur
+rag/uploads/
+
+# Base SQLite de repli (dev local)
+app.db
+*.db
+
+# Index FAISS persiste
+rag/index/
+
+# dossier 
+maquette_frontend/
+.streamlit 
