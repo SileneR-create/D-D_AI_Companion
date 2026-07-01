@@ -13,8 +13,10 @@ import { CharacterSheet } from "../components/CharacterSheet.jsx";
 import { ABILITIES, fmtMod } from "../lib/pointBuy.js";
 import { computeSheet, fmtMod as fmtSheetMod } from "../lib/sheet.js";
 
-export function Library({ setView }) {
+export function Library({ setView, embedded = false, only }) {
   const { setActive } = useActiveCampaign();
+  const showPersos = !only || only === "personnages";
+  const showCamps = !only || only === "campagnes";
   const [characters, setCharacters] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
   const [open, setOpen] = useState(null);
@@ -50,12 +52,9 @@ export function Library({ setView }) {
   };
   const openArchive = async (c) => { const a = await getArchive(c.id); if (a) setArchive(a); };
 
-  return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
-      <ScreenTitle eyebrow="Vos creations" title="Mon antre" />
-      <div style={{ padding: "0 48px" }}><Divider /></div>
-
-      <div style={{ flex: 1, overflowY: "auto", padding: "8px 48px 32px", maxWidth: 920, margin: "0 auto", width: "100%" }}>
+  const body = (
+    <>
+      {showPersos && (<>
         <SectionLabel icon={Shield} text={`Personnages (${characters.length})`} />
         <button onClick={() => setView("character")} style={ghost}><Plus size={13} /> Nouveau personnage</button>
 
@@ -154,8 +153,10 @@ export function Library({ setView }) {
             ))}
           </div>
         )}
+      </>)}
 
-        <div style={{ height: 24 }} />
+      {showCamps && (<>
+        {showPersos && <div style={{ height: 24 }} />}
         <SectionLabel icon={Swords} text={`Campagnes (${campaigns.length})`} />
         <button onClick={() => setView("create")} style={ghost}><Plus size={13} /> Forger une campagne</button>
 
@@ -193,8 +194,12 @@ export function Library({ setView }) {
             })}
           </div>
         )}
-      </div>
+      </>)}
+    </>
+  );
 
+  const modals = (
+    <>
       {archive && (
         <Modal title={`Archive — ${archive.name}`} width={620} onClose={() => setArchive(null)}>
           <ArchiveView archive={archive} />
@@ -206,6 +211,18 @@ export function Library({ setView }) {
             onSaved={(u) => { setCharacters((list) => list.map((x) => x.id === u.id ? { ...x, ...u } : x)); setSheet(u); }} />
         </Modal>
       )}
+    </>
+  );
+
+  if (embedded) return (<>{body}{modals}</>);
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+      <ScreenTitle eyebrow="Vos creations" title="Mon antre" />
+      <div style={{ padding: "0 48px" }}><Divider /></div>
+      <div style={{ flex: 1, overflowY: "auto", padding: "8px 48px 32px", maxWidth: 920, margin: "0 auto", width: "100%" }}>
+        {body}
+      </div>
+      {modals}
     </div>
   );
 }

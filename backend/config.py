@@ -13,10 +13,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_MODEL = "mistral:7b-instruct"
 AVAILABLE_MODELS = [
     "mistral:7b-instruct",
+    "mistral-nemo:latest",         # 12B Mistral — meilleur francais + narration (recommande solo)
+    "gemma2:9b",                   # bon multilingue, plus leger
     "qwen3:latest",
     "incept5/llama3.1-claude",
     "deepseek-r1:latest",
 ]
+# NB : le modele doit etre installe cote Ollama (`ollama pull <nom>`) pour etre utilisable.
 
 # --- Performance Ollama ------------------------------------------------------
 # keep_alive : duree pendant laquelle le modele reste charge en memoire entre

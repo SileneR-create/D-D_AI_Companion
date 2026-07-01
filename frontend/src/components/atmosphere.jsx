@@ -7,6 +7,8 @@ import { T } from "../theme.js";
 export function GlobalStyles() {
   return (
     <style>{`@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cinzel+Decorative:wght@700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+      *{ box-sizing:border-box; }
+      html,body,#root{ max-width:100%; overflow-x:hidden; }
       *::selection{ background:${T.gold}; color:${T.void}; }
       .lift{ transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
       .lift:hover{ transform: translateY(-4px); border-color:${T.gold}!important; box-shadow:0 16px 40px rgba(0,0,0,.55); }

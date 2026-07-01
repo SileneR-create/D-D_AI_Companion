@@ -31,11 +31,21 @@ services:
       - "8000:8000"
     volumes:
       - ./rag/uploads:/app/rag/uploads
+    # Sonde rapide : l'API bind vite (imports lourds RAG rendus paresseux) -> "healthy"
+    # en quelques secondes, ce qui debloque le frontend sans 502.
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/api/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
 
   frontend:
     build: ./frontend
+    # Le frontend (nginx) n'ouvre qu'une fois le backend pret -> plus de 502 au demarrage.
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
       - "8080:80"
 

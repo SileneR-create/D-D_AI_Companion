@@ -9,6 +9,7 @@ import { T, DISPLAY, ORNATE, BODY } from "../theme.js";
 import { Divider } from "./ornaments.jsx";
 import { ABILITIES, STANDARD_ARRAY, BUDGET, audit, fmtMod } from "../lib/pointBuy.js";
 import { getClassSpells, getSpellDetail } from "../api/characters.js";
+import { listItems } from "../api/forge.js";
 import { cantripsKnown, spellsKnown } from "../lib/spellLimits.js";
 import { SUBCLASSES, BACKGROUNDS, backgroundByName } from "../lib/charOptions.js";
 import { ABILITY_FR, SKILLS } from "../lib/sheet.js";
@@ -39,6 +40,12 @@ export function CharacterForm({ onSave, submitLabel = "Creer le personnage", cam
   const [loadingSpells, setLoadingSpells] = useState(false);
   const [details, setDetails] = useState({});
   const [openSpell, setOpenSpell] = useState(null);
+
+  // --- Inventaire de depart (objets forges dans La Forge) ---
+  const [items, setItems] = useState([]);
+  const [invSel, setInvSel] = useState([]);
+  useEffect(() => { listItems().then(setItems).catch(() => {}); }, []);
+  const toggleItem = (id) => setInvSel((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
 
   const showDetail = async (index) => {
     setOpenSpell((cur) => (cur === index ? null : index));
@@ -127,6 +134,7 @@ export function CharacterForm({ onSave, submitLabel = "Creer le personnage", cam
         other_proficiencies: bg ? `Outils : ${bg.tool}` : null,
         ability_bonus: bonusMap,
         gold: Number(form.gold) || 0, silver: Number(form.silver) || 0, copper: Number(form.copper) || 0,
+        starting_items: invSel,
         ...(campaignId ? { campaign_id: campaignId } : {}),
       });
     } catch (e) { setError(e.message); } finally { setBusy(false); }
@@ -307,6 +315,29 @@ export function CharacterForm({ onSave, submitLabel = "Creer le personnage", cam
                 ))}
               </div>
             )}
+          </>
+        )}
+
+        {items.length > 0 && (
+          <>
+            <Divider label="Inventaire de depart (Arsenal)" />
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {items.map((it) => {
+                const on = invSel.includes(it.id);
+                return (
+                  <button key={it.id} onClick={() => toggleItem(it.id)} style={{
+                    padding: "7px 12px", borderRadius: 3, cursor: "pointer",
+                    background: on ? "rgba(201,162,75,.14)" : "transparent",
+                    border: `1px solid ${on ? T.gold : T.line}`, color: on ? T.parch : T.mist,
+                    fontFamily: BODY, fontSize: 14 }}>
+                    {on ? "✦ " : ""}{it.name}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ fontFamily: BODY, fontStyle: "italic", fontSize: 13, color: T.mistDim, marginTop: 6 }}>
+              Objets forges dans La Forge. {invSel.length > 0 ? `${invSel.length} objet(s) au depart.` : "Clique pour les glisser dans l'inventaire."}
+            </div>
           </>
         )}
 

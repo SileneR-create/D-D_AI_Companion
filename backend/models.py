@@ -18,8 +18,9 @@ class Campaign(SQLModel, table=True):
     name: str = Field(index=True)   # unicite par utilisateur, pas globale
     description: Optional[str] = Field(default=None)
     dm_id: int = Field(foreign_key="user.id")
-    status: str = "active"                        # active | ended
+    status: str = "active"                        # active | ended | solo
     ended_at: Optional[datetime] = Field(default=None)
+    solo_outline: Optional[str] = Field(default=None)  # JSON : ossature d'aventure solo (actes, antagoniste...)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -170,6 +171,7 @@ class CampaignElement(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     owner_id: int = Field(foreign_key="user.id", index=True)
     campaign_id: int = Field(foreign_key="campaign.id", index=True)
-    element_type: str                            # npc | location
+    element_type: str                            # npc | location | character
     element_id: int
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    # (Relation N-N campagne <-> element ; uq_campelem evite les doublons.)

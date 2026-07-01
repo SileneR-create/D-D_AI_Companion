@@ -10,13 +10,11 @@ import json
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
 
-import faiss
 import httpx
-from langchain_community.docstore.in_memory import InMemoryDocstore
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain_text_splitters import CharacterTextSplitter
-from PyPDF2 import PdfReader
+
+# NB : faiss / langchain / HuggingFaceEmbeddings (torch) sont importes PARESSEUSEMENT
+# dans les fonctions ci-dessous. Sinon leur chargement (plusieurs secondes) bloquerait
+# le demarrage d'uvicorn -> nginx renvoie 502 tant que le backend n'ecoute pas.
 
 from backend.config import (
     RAG_CHUNK_OVERLAP,
@@ -34,19 +32,23 @@ from backend.schemas import RagSource
 SUPPORTED_EXT = {".pdf", ".txt", ".md"}
 _MANIFEST = RAG_INDEX_DIR / "manifest.json"
 
-_vectorstore: FAISS | None = None
-_embeddings: HuggingFaceEmbeddings | None = None
+_vectorstore = None          # FAISS, charge paresseusement
+_embeddings = None           # HuggingFaceEmbeddings, charge paresseusement
 _sources: list[RagSource] = []
 
 
-def _get_embeddings() -> HuggingFaceEmbeddings:
+def _get_embeddings():
     global _embeddings
     if _embeddings is None:
+        from langchain_community.embeddings import HuggingFaceEmbeddings
         _embeddings = HuggingFaceEmbeddings(model_name=RAG_EMBEDDING_MODEL, model_kwargs={"device": "cpu"})
     return _embeddings
 
 
-def _empty_store() -> FAISS:
+def _empty_store():
+    import faiss
+    from langchain_community.docstore.in_memory import InMemoryDocstore
+    from langchain_community.vectorstores import FAISS
     embeddings = _get_embeddings()
     dim = len(embeddings.embed_query("test"))
     return FAISS(embedding_function=embeddings, index=faiss.IndexFlatL2(dim),
@@ -70,6 +72,7 @@ def _fingerprint() -> dict:
 
 def _extract_text(path: Path) -> str:
     if path.suffix.lower() == ".pdf":
+        from PyPDF2 import PdfReader
         with open(path, "rb") as f:
             return "".join(p.extract_text() or "" for p in PdfReader(f).pages)
     return path.read_text(encoding="utf-8", errors="ignore")
@@ -77,6 +80,7 @@ def _extract_text(path: Path) -> str:
 
 def _index_file(path: Path, label: str | None = None) -> RagSource:
     global _vectorstore
+    from langchain_text_splitters import CharacterTextSplitter
     if _vectorstore is None:
         _vectorstore = _empty_store()
     splitter = CharacterTextSplitter(chunk_size=RAG_CHUNK_SIZE, chunk_overlap=RAG_CHUNK_OVERLAP)
@@ -110,6 +114,7 @@ def _try_load() -> bool:
         manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
         if manifest.get("model") != RAG_EMBEDDING_MODEL or manifest.get("files") != _fingerprint()["files"]:
             return False
+        from langchain_community.vectorstores import FAISS
         _vectorstore = FAISS.load_local(str(RAG_INDEX_DIR), _get_embeddings(), allow_dangerous_deserialization=True)
         _sources = [RagSource(**s) for s in manifest.get("sources", [])]
         print(f"RAG : index recharge depuis le disque ({len(_sources)} source(s))")

@@ -9,7 +9,7 @@ import { DOMAINS } from "../api";
 import { useChatStream } from "../hooks/useChatStream.js";
 import { Conversation, Inkwell } from "./chat.jsx";
 
-export function TableChat({ campaignId, role, model, initial, sidebar, onTurn }) {
+export function TableChat({ campaignId, role, model, initial, sidebar, onTurn, onReady }) {
   const [input, setInput] = useState("");
   const { messages, draft, streaming, toolName, send, resend, pending } =
     useChatStream(DOMAINS.GAMEMASTER, { model, role, campaignId, initial });
@@ -19,6 +19,10 @@ export function TableChat({ campaignId, role, model, initial, sidebar, onTurn })
     if (wasStreaming.current && !streaming) onTurn?.();
     wasStreaming.current = streaming;
   }, [streaming, onTurn]);
+
+  // Expose l'API du chat (envoyer un message, lire l'historique) au parent —
+  // permet au pop-up de des d'injecter le resultat d'un jet dans le recit.
+  useEffect(() => { onReady?.({ send, messages }); }, [onReady, send, messages]);
 
   const onSend = () => { send(input); setInput(""); };
 

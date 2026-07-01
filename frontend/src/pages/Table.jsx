@@ -1,44 +1,34 @@
-/** Ecran "La Table" — chat MD (historique persistant) + actions (modales) + sidebar. */
+/** "La Table" — tableau de bord de la campagne en cours : PJ, PNJ/lieux actifs,
+ *  quetes, attributions + outils de creation. (Le conteur IA vit desormais en Solo.) */
 import { useEffect, useState } from "react";
-import { Users, Scroll, MapPin, PanelRightOpen, PanelRightClose, ChevronDown, BookOpenCheck, UserPlus } from "lucide-react";
+import { Users, Scroll, MapPin, ChevronDown, BookOpenCheck, UserPlus, Shield, PanelRightOpen, PanelRightClose } from "lucide-react";
 import { T, DISPLAY, ORNATE, BODY } from "../theme.js";
-import { useModels } from "../hooks/useModels.js";
+import { useViewport } from "../hooks/useViewport.js";
 import { useCampaign } from "../hooks/useCampaign.js";
 import { useActiveCampaign } from "../campaign/ActiveCampaignContext.jsx";
-import { listMessages, listCampaigns, activateCampaign } from "../api/campaigns.js";
+import { listCampaigns, activateCampaign } from "../api/campaigns.js";
 import { activateElement, deactivateElement } from "../api/library.js";
 import { listCharacters } from "../api/characters.js";
-import { DOMAINS } from "../api";
-import { Divider, ScreenTitle } from "../components/ornaments.jsx";
-import { Ledger, ModelSelect } from "../components/panels.jsx";
+import { Divider } from "../components/ornaments.jsx";
+import { Ledger } from "../components/panels.jsx";
 import { CampaignTools } from "../components/CampaignTools.jsx";
 import { TableEmpty } from "../components/TableEmpty.jsx";
-import { TableChat } from "../components/TableChat.jsx";
 import { Modal } from "../components/Modal.jsx";
 import { NpcForm, QuestForm, LocationWizard } from "../components/worldForms.jsx";
 import { QuickReference } from "../components/QuickReference.jsx";
 
-const WELCOME = [{
-  role: "assistant",
-  content: "Bienvenue a la Table. Utilise les boutons ci-dessus pour creer un PNJ, "
-    + "une quete ou un lieu, ou demande-moi de lancer un combat, les des, ou de consulter l'etat de la partie.",
-}];
-
 export function Table({ setView }) {
   const { active, setActive } = useActiveCampaign();
   const role = active?.role || "dm";
-  const models = useModels(DOMAINS.GAMEMASTER);
-  const [model, setModel] = useState("mistral:7b-instruct");
   const { campaign, refresh } = useCampaign();
+  const { isNarrow } = useViewport();
 
   const [modal, setModal] = useState(null);
-  const [sidebar, setSidebar] = useState(true);
+  const [showLedger, setShowLedger] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
-  const [history, setHistory] = useState(null);     // null = chargement
-  const [resuming, setResuming] = useState(!active?.id);  // recherche de la derniere campagne
+  const [resuming, setResuming] = useState(!active?.id);
 
-  // Au clic sur La Table sans campagne active : reprend automatiquement la plus
-  // recente (la "derniere en jeu"). Si aucune campagne, on tombera sur TableEmpty.
+  // Sans campagne active : reprend automatiquement la plus recente.
   useEffect(() => {
     if (active?.id) { setResuming(false); return undefined; }
     let alive = true;
@@ -53,15 +43,8 @@ export function Table({ setView }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Charge l'historique de conversation a chaque changement de campagne.
-  useEffect(() => {
-    if (!active?.id) { setHistory(null); return; }
-    setHistory(null);
-    listMessages(active.id).then((msgs) => setHistory(msgs.length ? msgs : WELCOME)).catch(() => setHistory(WELCOME));
-  }, [active?.id]);
-
   const afterCreate = () => { setModal(null); setReloadKey((k) => k + 1); refresh(); };
-  const afterTurn = () => { refresh(); setReloadKey((k) => k + 1); };
+  const afterChange = () => { setReloadKey((k) => k + 1); refresh(); };
 
   if (!active?.id) {
     if (resuming) return (
@@ -73,20 +56,11 @@ export function Table({ setView }) {
   }
   const isDm = role === "dm";
 
-  const sidebarNode = sidebar ? (
-    <aside style={{ width: 330, flexShrink: 0, overflowY: "auto" }}>
-      <Ledger campaign={campaign} />
-      <div style={{ height: 16 }} />
-      <CampaignTools campaignId={active.id} role={role} reloadKey={reloadKey} onChanged={refresh} />
-      <ModelSelect models={models} value={model} onChange={setModel} />
-    </aside>
-  ) : null;
-
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
       <CampaignHeader active={active} setActive={setActive} />
 
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 48px", marginBottom: 6, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: `0 ${isNarrow ? 16 : 48}px`, marginBottom: 6, flexWrap: "wrap" }}>
         {isDm && <>
           <ActionBtn icon={Users} label="Creer un PNJ" onClick={() => setModal("npc")} />
           <ActionBtn icon={Scroll} label="Creer une quete" onClick={() => setModal("quest")} />
@@ -94,24 +68,64 @@ export function Table({ setView }) {
           <ActionBtn icon={UserPlus} label="Ajouter un PJ" onClick={() => setModal("addpj")} />
         </>}
         <div style={{ flex: 1 }} />
+        <ActionBtn icon={showLedger ? PanelRightClose : PanelRightOpen} label={showLedger ? "Masquer" : "Grimoire"} onClick={() => setShowLedger((v) => !v)} subtle />
         <ActionBtn icon={BookOpenCheck} label="Reference" onClick={() => setModal("ref")} subtle />
-        <ActionBtn icon={sidebar ? PanelRightClose : PanelRightOpen} label={sidebar ? "Masquer" : "Grimoire"} onClick={() => setSidebar((v) => !v)} subtle />
       </div>
-      <div style={{ padding: "0 48px" }}><Divider label={isDm ? "Le Maitre du Jeu" : "A la table"} /></div>
+      <div style={{ padding: `0 ${isNarrow ? 16 : 48}px` }}><Divider label={isDm ? "Le Maitre du Jeu" : "A la table"} /></div>
 
-      {history === null ? (
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: DISPLAY, letterSpacing: 3, textTransform: "uppercase", color: T.mistDim }}>
-          Chargement de l'historique...
+      <div style={{ flex: 1, overflowY: "auto", padding: `14px ${isNarrow ? 16 : 48}px 32px` }}>
+        <div style={{ display: "grid", gridTemplateColumns: (!isNarrow && showLedger) ? "minmax(0, 1fr) 330px" : "1fr", gap: 26, maxWidth: 1120, margin: "0 auto", alignItems: "start" }}>
+          <div>
+            <Players campaignId={active.id} reloadKey={reloadKey} />
+            <div style={{ height: 18 }} />
+            <CampaignTools campaignId={active.id} role={role} reloadKey={reloadKey} onChanged={afterChange} />
+          </div>
+          {showLedger && (
+            <aside style={{ position: isNarrow ? "static" : "sticky", top: 0 }}>
+              <Ledger campaign={campaign} />
+            </aside>
+          )}
         </div>
-      ) : (
-        <TableChat key={active.id} campaignId={active.id} role={role} model={model} initial={history} sidebar={sidebarNode} onTurn={afterTurn} />
-      )}
+      </div>
 
       {modal === "npc" && <Modal title="Creer un PNJ" onClose={() => setModal(null)}><NpcForm campaignId={active.id} onDone={afterCreate} /></Modal>}
       {modal === "quest" && <Modal title="Lancer une quete" onClose={() => setModal(null)}><QuestForm campaignId={active.id} onDone={afterCreate} /></Modal>}
       {modal === "location" && <Modal title="Creer un lieu" onClose={() => setModal(null)} width={600}><LocationWizard campaignId={active.id} onDone={afterCreate} /></Modal>}
       {modal === "ref" && <Modal title="Reference rapide" onClose={() => setModal(null)} width={640}><QuickReference /></Modal>}
-      {modal === "addpj" && <Modal title="Personnages de l'aventure" onClose={() => setModal(null)} width={520}><AddPlayers campaignId={active.id} onChanged={afterTurn} /></Modal>}
+      {modal === "addpj" && <Modal title="Personnages de l'aventure" onClose={() => setModal(null)} width={520}><AddPlayers campaignId={active.id} onChanged={afterChange} /></Modal>}
+    </div>
+  );
+}
+
+/** Personnages joueurs participant a la campagne en cours. */
+function Players({ campaignId, reloadKey }) {
+  const [chars, setChars] = useState([]);
+  useEffect(() => {
+    listCharacters().then((cs) => setChars(cs.filter((c) =>
+      c.campaign_id === campaignId || (c.campaigns || []).includes(campaignId)))).catch(() => {});
+  }, [campaignId, reloadKey]);
+  return (
+    <div style={{ background: T.panel, border: `1px solid ${T.line}`, borderRadius: 4, padding: "12px 14px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        <Shield size={15} color={T.gold} strokeWidth={1.4} />
+        <span style={{ fontFamily: DISPLAY, fontSize: 10.5, letterSpacing: 2, textTransform: "uppercase", color: T.gold }}>
+          Personnages de l'aventure ({chars.length})
+        </span>
+      </div>
+      {chars.length === 0 ? (
+        <div style={{ fontFamily: BODY, fontStyle: "italic", fontSize: 13.5, color: T.mistDim }}>
+          Aucun personnage. Utilise « Ajouter un PJ » pour en faire entrer.
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 8 }}>
+          {chars.map((c) => (
+            <div key={c.id} style={{ padding: "8px 11px", borderRadius: 3, background: T.ink, border: `1px solid ${T.line}` }}>
+              <div style={{ fontFamily: ORNATE, fontSize: 15.5, color: T.parch }}>{c.name}</div>
+              <div style={{ fontFamily: BODY, fontSize: 12.5, color: T.mistDim }}>{c.race} {c.character_class} · niv. {c.class_level}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -163,7 +177,7 @@ function AddPlayers({ campaignId, onChanged }) {
     try {
       if (inIt) await deactivateElement({ element_type: "character", element_id: c.id, campaign_id: campaignId });
       else await activateElement({ element_type: "character", element_id: c.id, campaign_id: campaignId });
-      setMsg(c.name + (inIt ? " a quitte l" + AP + "aventure." : " rejoint l" + AP + "aventure."));
+      setMsg(c.name + (inIt ? " a quitte l'aventure." : " rejoint l'aventure."));
       load(); onChanged && onChanged();
     } catch (e) { setMsg(e.message); }
   };

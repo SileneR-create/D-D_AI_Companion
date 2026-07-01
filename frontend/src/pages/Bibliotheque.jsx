@@ -10,7 +10,7 @@ import { getLibrary, activateElement, deactivateElement } from "../api/library.j
 
 const FILTERS = [["all", "Tout"], ["npc", "PNJ"], ["location", "Lieux"]];
 
-export function Bibliotheque() {
+export function Bibliotheque({ embedded = false, only }) {
   const [lib, setLib] = useState({ campaigns: [], npcs: [], locations: [], items: [] });
   const [filter, setFilter] = useState("all");
   const [modal, setModal] = useState(null); // "npc" | "location" | null
@@ -27,9 +27,49 @@ export function Bibliotheque() {
     } catch { /* ignore */ }
   };
 
-  const showNpc = filter === "all" || filter === "npc";
-  const showLoc = filter === "all" || filter === "location";
+  const showNpc = only ? only === "npc" : (filter === "all" || filter === "npc");
+  const showLoc = only ? only === "location" : (filter === "all" || filter === "location");
 
+  const body = (
+    <>
+      {showNpc && (
+        <Section icon={Users} title={`PNJ (${lib.npcs.length})`}>
+          <AddButton label="Ajouter un PNJ" onClick={() => setModal("npc")} />
+          {lib.npcs.map((n) => (
+            <ElementCard key={n.id} el={n} campaigns={lib.campaigns}
+              onToggle={(cid, active) => toggle("npc", n.id, cid, active)} />
+          ))}
+        </Section>
+      )}
+      {showLoc && (
+        <Section icon={MapPin} title={`Lieux (${lib.locations.length})`}>
+          <AddButton label="Ajouter un lieu" onClick={() => setModal("location")} />
+          {lib.locations.map((l) => (
+            <ElementCard key={l.id} el={l} campaigns={lib.campaigns}
+              onToggle={(cid, active) => toggle("location", l.id, cid, active)} />
+          ))}
+        </Section>
+      )}
+    </>
+  );
+
+  const modals = (
+    <>
+      {/* Memes formulaires que La Table : sans campagne, l'element est cree dans les Archives. */}
+      {modal === "npc" && (
+        <Modal title="Nouveau PNJ" onClose={() => setModal(null)}>
+          <NpcForm campaignId={null} onDone={closeModal} />
+        </Modal>
+      )}
+      {modal === "location" && (
+        <Modal title="Nouveau lieu" onClose={() => setModal(null)}>
+          <LocationWizard campaignId={null} onDone={closeModal} />
+        </Modal>
+      )}
+    </>
+  );
+
+  if (embedded) return (<>{body}{modals}</>);
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
       <ScreenTitle eyebrow="PNJ & lieux" title="Les Archives" />
@@ -47,37 +87,9 @@ export function Bibliotheque() {
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: "8px 48px 32px", maxWidth: 920, margin: "0 auto", width: "100%" }}>
-        {showNpc && (
-          <Section icon={Users} title={`PNJ (${lib.npcs.length})`}>
-            <AddButton label="Ajouter un PNJ" onClick={() => setModal("npc")} />
-            {lib.npcs.map((n) => (
-              <ElementCard key={n.id} el={n} campaigns={lib.campaigns}
-                onToggle={(cid, active) => toggle("npc", n.id, cid, active)} />
-            ))}
-          </Section>
-        )}
-        {showLoc && (
-          <Section icon={MapPin} title={`Lieux (${lib.locations.length})`}>
-            <AddButton label="Ajouter un lieu" onClick={() => setModal("location")} />
-            {lib.locations.map((l) => (
-              <ElementCard key={l.id} el={l} campaigns={lib.campaigns}
-                onToggle={(cid, active) => toggle("location", l.id, cid, active)} />
-            ))}
-          </Section>
-        )}
+        {body}
       </div>
-
-      {/* Memes formulaires que La Table : sans campagne, l'element est cree dans les Archives. */}
-      {modal === "npc" && (
-        <Modal title="Nouveau PNJ" onClose={() => setModal(null)}>
-          <NpcForm campaignId={null} onDone={closeModal} />
-        </Modal>
-      )}
-      {modal === "location" && (
-        <Modal title="Nouveau lieu" onClose={() => setModal(null)}>
-          <LocationWizard campaignId={null} onDone={closeModal} />
-        </Modal>
-      )}
+      {modals}
     </div>
   );
 }

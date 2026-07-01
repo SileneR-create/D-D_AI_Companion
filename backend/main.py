@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.config import API_TITLE, API_VERSION, CORS_ORIGINS, WARMUP_ON_STARTUP
 from backend.db import init_db
 from backend.deps import get_current_user
-from backend.routes import arsenal, auth, characters, forge, gamemaster, library, rules
+from backend.routes import arsenal, auth, characters, forge, gamemaster, library, rules, solo
 from backend.schemas import HealthResponse
 from backend.services.chat import warmup
 from backend.services.mcp import init_mcp_gamemaster, init_mcp_rules
@@ -71,6 +71,7 @@ app.include_router(characters.router, prefix="/api/characters", tags=["character
 app.include_router(forge.router, prefix="/api/forge", tags=["forge"], dependencies=_auth)
 app.include_router(library.router, prefix="/api/library", tags=["library"], dependencies=_auth)
 app.include_router(arsenal.router, prefix="/api/arsenal", tags=["arsenal"], dependencies=_auth)
+app.include_router(solo.router, prefix="/api/solo", tags=["solo"], dependencies=_auth)
 
 
 @app.get("/api/health", response_model=HealthResponse)

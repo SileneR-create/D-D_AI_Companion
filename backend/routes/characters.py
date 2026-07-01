@@ -6,7 +6,7 @@ from sqlmodel import Session, select
 
 from backend.db import get_session
 from backend.deps import get_current_user
-from backend.models import Campaign, CampaignElement, CampaignMember, Character, User
+from backend.models import Campaign, CampaignElement, CampaignMember, Character, Item, ItemAssignment, User
 from backend.rules5e import ABILITIES, validate_scores
 from backend.schemas import (
     CharacterCreate,
@@ -114,6 +114,15 @@ async def create_character(
     session.add(character)
     session.commit()
     session.refresh(character)
+
+    # Inventaire de depart : attribue les objets de la Forge choisis (si a l'utilisateur).
+    if data.starting_items:
+        for iid in data.starting_items:
+            it = session.get(Item, iid)
+            if it and it.owner_id == user.id:
+                session.add(ItemAssignment(item_id=iid, owner_id=user.id,
+                                           target_type="character", target_id=character.id))
+        session.commit()
 
     if campaign is not None:
         manager = get_mcp_gamemaster()

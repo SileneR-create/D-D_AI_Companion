@@ -1,6 +1,8 @@
 """Route /api/gamemaster -- chat MD, etat, campagnes, PNJ, lieux, quetes, recrutement."""
 import json
 
+import ollama
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlmodel import Session, select
@@ -13,7 +15,7 @@ from datetime import datetime
 from backend.models import (
     Campaign, CampaignElement, CampaignMember, Character, ItemAssignment, Location, Message, Npc, Quest, User,
 )
-from backend.prompts import GAMEMASTER_PROMPT
+from backend.prompts import GAMEMASTER_PROMPT, SOLO_PROMPT
 from backend.schemas import (
     ActionResult,
     ArchivedQuest,
@@ -95,7 +97,22 @@ def _mirror_chat_tool(owner_id: int, campaign_id: int):
 
 
 @router.get("/models", response_model=ModelsResponse)
-def list_models() -> ModelsResponse:
+async def list_models() -> ModelsResponse:
+    """Liste les modeles Ollama REELLEMENT installes (evite de proposer un modele
+    absent, qui provoquerait une erreur 404 a la generation). Repli sur la liste
+    statique si Ollama est injoignable."""
+    try:
+        data = await ollama.AsyncClient().list()
+        raw = data.get("models", []) if isinstance(data, dict) else getattr(data, "models", [])
+        names = []
+        for m in raw:
+            n = (m.get("model") or m.get("name")) if isinstance(m, dict) else (getattr(m, "model", None) or getattr(m, "name", None))
+            if n:
+                names.append(n)
+        if names:
+            return ModelsResponse(models=sorted(set(names)))
+    except Exception:  # noqa: BLE001 -- Ollama indisponible : on retombe sur la liste statique
+        pass
     return ModelsResponse(models=AVAILABLE_MODELS)
 
 
@@ -164,7 +181,10 @@ def list_campaigns(user: User = Depends(get_current_user),
     if healed:
         session.commit()
 
-    camps = sorted(by_id.values(), key=lambda t: (t[0].created_at or datetime.min), reverse=True)
+    # Les aventures solo ont leur propre espace ("Jeu solo") : on ne les melange pas
+    # aux campagnes menees par le joueur.
+    camps = sorted((t for t in by_id.values() if t[0].status != "solo"),
+                   key=lambda t: (t[0].created_at or datetime.min), reverse=True)
     return CampaignsResponse(campaigns=[
         CampaignSummary(id=c.id, name=c.name, description=c.description, role=role, status=c.status)
         for c, role in camps
@@ -476,6 +496,23 @@ def _campaign_context(session: Session, campaign_id: int | None, username: str) 
         "  ne demande que les adversaires s'ils ne sont pas connus.",
         "- Ne te represente pas a chaque message : poursuis directement l'action demandee.",
     ]
+
+    # Mode solo : on injecte l'ossature (actes, antagoniste, objectif) pour guider
+    # la narration scene par scene sans derive.
+    if campaign.status == "solo" and campaign.solo_outline:
+        try:
+            o = json.loads(campaign.solo_outline)
+        except (ValueError, TypeError):
+            o = {}
+        hero = pjs[0].name if pjs else username
+        lines.append("\nOSSATURE DE L'AVENTURE SOLO (suis-la acte par acte, dans l'ordre) :")
+        lines.append(f"- Le joueur incarne : {hero}. Tu joues TOUT le reste.")
+        if o.get("objective"):
+            lines.append(f"- Objectif final : {o['objective']}.")
+        for i, act in enumerate(o.get("acts", []), 1):
+            lines.append(f"  Acte {i} — {act.get('title', '')} : {act.get('goal', '')}")
+        lines.append("- Fais vivre l'acte courant avant de passer au suivant ; laisse le joueur decider de ses actions.")
+
     return base + "\n".join(lines)
 
 
@@ -490,7 +527,10 @@ async def chat(req: ChatRequest, user: User = Depends(get_current_user),
         if req.message.strip() and not req.resend:
             _save_message(persist, "user", req.message, user.username)
 
-    system_prompt = GAMEMASTER_PROMPT + _campaign_context(session, req.campaign_id, user.username)
+    # Aventure solo -> narrateur dedie ; sinon -> Maitre du Jeu assistant.
+    campaign = session.get(Campaign, req.campaign_id) if req.campaign_id else None
+    base_prompt = SOLO_PROMPT if (campaign and campaign.status == "solo") else GAMEMASTER_PROMPT
+    system_prompt = base_prompt + _campaign_context(session, req.campaign_id, user.username)
     # Reflet en base : les PNJ/lieux crees par le MD pendant la partie apparaissent
     # dans les Archives (sinon ils restent dans le stockage interne du serveur MCP).
     mirror = _mirror_chat_tool(user.id, persist) if persist else None

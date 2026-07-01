@@ -86,6 +86,28 @@ class CampaignsResponse(BaseModel):
     campaigns: List[CampaignSummary]
 
 
+class SoloStartRequest(BaseModel):
+    genre: str                                    # heroique | sombre | enquete | donjon | intrigue | horreur
+    length: str = "courte"                        # courte | moyenne | longue
+    tone: str = "serieux"                         # serieux | heroique | leger
+    pitch: Optional[str] = None                   # souhait libre du joueur
+    character_id: int                             # le perso (existant) incarne en solo
+
+
+class SoloAdventure(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+    genre: Optional[str] = None
+    character_name: Optional[str] = None
+    acts: int = 0
+    created_at: Optional[str] = None
+
+
+class SoloAdventuresResponse(BaseModel):
+    adventures: List[SoloAdventure]
+
+
 class ArchivedQuest(BaseModel):
     title: str
     objective: str = ""
@@ -119,6 +141,7 @@ class CharacterCreate(BaseModel):
     gold: int = 0
     silver: int = 0
     copper: int = 0
+    starting_items: List[int] = Field(default_factory=list)  # objets de la Forge donnes a la creation
     subclass: Optional[str] = None
     skill_proficiencies: List[str] = Field(default_factory=list)
     feats: Optional[str] = None
