@@ -1,2 +1,0 @@
-[console_scripts]
-gamemaster-mcp = gamemaster_mcp.main:main

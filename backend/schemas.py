@@ -8,8 +8,8 @@ from backend.config import DEFAULT_MODEL
 
 # --- Authentification -------------------------------------------------------
 class UserCreate(BaseModel):
-    username: str
-    password: str
+    username: str = Field(min_length=3, max_length=40)
+    password: str = Field(min_length=8, description="8 caracteres minimum")
     email: Optional[str] = None
 
 

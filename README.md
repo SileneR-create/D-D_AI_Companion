@@ -1,16 +1,17 @@
 # 🐉 D&D AI Companion
 
-[![Python](https://img.shields.io/badge/python-3.11-blue?logo=python)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/python-3.12-blue?logo=python)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-backend-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-Vite-61dafb?logo=react)](https://react.dev/)
 [![Ollama](https://img.shields.io/badge/LLM-Ollama-black)](https://ollama.com/)
 [![Docker](https://img.shields.io/badge/docker-compose-2496ED?logo=docker)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-**Compagnon de jeu pour Donjons & Dragons (5e / 2024)** : un oracle des règles (RAG sur le manuel
-de base + recherche d'outils), une table de Maître du Jeu pilotée par un LLM **local** (Ollama),
-la création de personnages au format **feuille 2024**, une bibliothèque transversale de PNJ / lieux /
-objets / trésors, une forge d'objets, et la gestion complète des campagnes.
+**Compagnon de jeu pour Donjons & Dragons (5e / 2024)**, organisé en **trois piliers** :
+**Le Grimoire** (oracle des règles — RAG sur le manuel + recherche SRD instantanée),
+**Les outils du Maître** (tableau de bord de campagne, PNJ / lieux / quêtes, personnages au format
+**feuille 2024**, Antre, Arsenal et Forge) et **Le Jeu en solo** (aventure générée puis **narrée** par un
+LLM **local** — Ollama). Le tout avec comptes, rôles, et une interface **responsive** à panneaux rétractables.
 
 > Tout fonctionne **en local** : aucune donnée n'est envoyée à un service tiers, le modèle tourne sur votre machine.
 
@@ -21,29 +22,30 @@ objets / trésors, une forge d'objets, et la gestion complète des campagnes.
 
 ## ✨ Fonctionnalités
 
-- **Le Grimoire** — consultation des règles 5e : **recherche instantanée** (sorts, monstres,
-  équipement, objets magiques, conditions issus du SRD) qui répond en < 1 s, **plus** un chat **RAG**
-  (manuel FR indexé + outils MCP) pour les questions ouvertes. Vous pouvez **ajouter vos documents**
-  (PDF/txt/md) ou **aspirer un site** dans l'index.
-- **La Table du Maître** — chat de campagne avec **historique persistant**, création de PNJ / quêtes /
-  lieux, **ajout de PJ** à l'aventure, lancer de dés, **détection d'intention** pour accélérer le LLM,
-  et une **référence rapide hors-ligne** (conditions, actions, couvert, DD, repos) en un clic.
-- **Création de personnage** — point-buy guidé, sorts par classe avec descriptions, **sous-classe**
-  et **historique 2024** (compétences, don d'origine et bonus de caractéristiques ajoutés
-  automatiquement), bourse de départ.
-- **Feuille de personnage 2024 complète** — CA, initiative, bonus de maîtrise, sauvegardes,
-  18 compétences, DD/attaque de sorts **calculés automatiquement** ; PV, dés de vie, jets de mort,
-  langues, dons, équipement et bourse (po/pa/pe/po/pp) éditables.
-- **PJ multi-campagnes** — un personnage peut **rejoindre/quitter plusieurs aventures** (depuis Mon
-  antre ou La Table).
-- **Les Archives** — vos **PNJ et lieux**, activables/désactivables par campagne. Les PNJ peuvent être
-  des **adversaires** (CA, PV, FP, ou stats d'un **monstre SRD** pré-rempli).
-- **L'Arsenal** — **catalogue d'objets D&D** (armes, armures, équipement, objets magiques) avec fiche
-  détaillée, **plus** vos objets forgés / trésors ; tout est **attribuable** à un PJ, un PNJ ou une quête.
-- **La Forge** — créez des objets/armes/artefacts/trésors (valeur en po/pa/pc).
-- **Gestion des campagnes** — activer, **terminer** (archive des quêtes réussies/échouées) ou
-  **supprimer** ; nom **unique par utilisateur** (deux comptes peuvent réutiliser un nom).
-- **Comptes & rôles** — authentification JWT, distinction **Maître du Jeu / Joueur** (outils filtrés par rôle).
+- **Accueil en cartes de tarot** — trois cartes (Grimoire / Maître / Solo) qui se **retournent** au clic
+  pour révéler leurs outils. Barre latérale **rétractable** et **responsive** (tiroir sur mobile).
+- **Le Grimoire** — règles 5e : **recherche instantanée** (sorts, monstres, équipement, objets magiques,
+  conditions du SRD) < 1 s, **plus** un chat **RAG** (manuel FR indexé + outils MCP) pour les questions
+  ouvertes. **Ajout de vos documents** (PDF/txt/md) ou **aspiration d'un site** dans l'index.
+- **Le Jeu en solo** — choisissez **genre, durée, ton** et un personnage : une **ossature d'aventure**
+  (actes, lieu de départ, antagoniste, objectif) est générée par des règles, puis un **narrateur LLM**
+  la met en scène **scène par scène**. **Pop-up de dés** (d20 + modificateur du perso, test détecté
+  automatiquement dans le récit) et **sélecteur de modèle** (liste les modèles Ollama réellement installés).
+- **La Table du Maître** — **tableau de bord** de la campagne en cours : personnages, PNJ / lieux actifs,
+  quêtes, attribution d'objets, recrutement ; création de PNJ / quêtes / lieux ; **référence rapide
+  hors-ligne** (conditions, actions, couvert, DD, repos). *(La narration IA vit désormais dans le mode Solo.)*
+- **Création de personnage** — point-buy guidé, sorts par classe avec descriptions, **sous-classe** et
+  **historique 2024** (compétences, don et bonus de caractéristiques automatiques), **inventaire de départ**
+  (objets de la Forge) et bourse.
+- **Feuille de personnage 2024 complète** — CA, initiative, maîtrise, sauvegardes, 18 compétences,
+  DD/attaque de sorts **calculés** ; PV, dés de vie, jets de mort, langues, dons, équipement et bourse éditables.
+- **L'Antre** — une **seule page** regroupant **campagnes, personnages, PNJ et lieux**, avec **filtres**
+  (Tout / Campagnes / Personnages / PNJ / Lieux). PNJ activables par campagne, **adversaires** (CA/PV/FP ou
+  stats d'un **monstre SRD** pré-rempli), PJ **multi-campagnes**, fin/suppression/archive des campagnes.
+- **L'Arsenal & La Forge** — **catalogue d'objets D&D** (SRD) avec fiches + vos objets forgés / trésors ;
+  tout est **attribuable** à un PJ, un PNJ ou une quête.
+- **Comptes & rôles** — authentification **JWT**, distinction **Maître / Joueur** (outils filtrés par rôle),
+  mots de passe **≥ 8 caractères**.
 
 ---
 
@@ -136,11 +138,12 @@ Pour tout arrêter : `docker compose down` (ajoutez `-v` pour effacer aussi la b
 ### Première utilisation
 
 1. Ouvrez **http://localhost:8080** et **créez un compte** (page de connexion).
-2. Depuis **le Seuil** (accueil) :
-   - **Créer un personnage** (choisissez classe, sous-classe et historique → les bonus s'appliquent).
-   - **Forger une campagne** (Session Zéro) — vous en devenez le **Maître du Jeu**.
-   - **La Table** pour mener la partie et discuter avec le LLM.
-3. Retrouvez tout dans **Mon antre** (personnages, fiches, campagnes) et **La Bibliothèque**.
+2. Depuis **le Seuil** (trois cartes de tarot à retourner) :
+   - **Le Grimoire** — chercher une règle / un sort / un monstre, ou poser une question ouverte.
+   - **Le Maître** — créer un personnage, forger une campagne (Session Zéro), mener **La Table**,
+     gérer **L'Antre**, l'Arsenal et la Forge.
+   - **Le Solo** — lancer une **aventure solo** (genre, durée, personnage) narrée par le LLM.
+3. Retrouvez tout dans **L'Antre** (campagnes, personnages, PNJ, lieux) grâce aux filtres.
 
 ---
 
@@ -161,7 +164,22 @@ Pour tout arrêter : `docker compose down` (ajoutez `-v` pour effacer aussi la b
 | `CHAT_HISTORY_MAX_MESSAGES` | `12` | Messages d'historique envoyés au LLM (prefill plus court = plus rapide). |
 | `OLLAMA_KEEP_ALIVE` | `30m` | Durée de maintien du modèle en mémoire. |
 
-Les modèles disponibles dans le sélecteur sont définis dans `backend/config.py` (`AVAILABLE_MODELS`).
+Le sélecteur de modèles liste automatiquement les modèles **installés dans Ollama** ; `AVAILABLE_MODELS`
+(dans `backend/config.py`) sert de repli si Ollama est injoignable.
+
+---
+
+## 🔒 Sécurité
+
+- **Secret JWT** : définissez impérativement `JWT_SECRET` en production (valeur aléatoire longue,
+  ex. `openssl rand -hex 32`). Le backend **avertit dans les logs** s'il utilise la valeur par défaut.
+- **Mots de passe** hachés avec **pbkdf2_sha256** (passlib), jamais stockés en clair ; minimum 8 caractères.
+- **Requêtes SQL** paramétrées via SQLModel/SQLAlchemy (pas d'injection) ; **entrées validées** par Pydantic.
+- **Anti-SSRF** : l'aspiration de site refuse les hôtes internes (loopback, réseaux privés, link-local,
+  métadonnées cloud) ; les uploads sont protégés contre la traversée de chemin (`Path(...).name`).
+- **Rôles** : les outils du LLM sont filtrés selon le rôle (Maître / Joueur) ; les routes métier exigent un JWT valide.
+- **À durcir selon votre exposition** : changez les identifiants **Grafana** et le mot de passe **PostgreSQL**
+  par défaut, et placez un **reverse-proxy HTTPS** devant l'application si elle sort du réseau local.
 
 ---
 
@@ -225,6 +243,11 @@ ARCHITECTURE.md  Contrat d'API détaillé
 
 - **« Oracle injoignable » / pas de réponse au chat** : vérifiez qu'Ollama tourne sur l'hôte
   (`ollama ps`) et que le modèle est téléchargé (`ollama pull mistral:7b-instruct`).
+- **`model '...' not found` en changeant de modèle** : le modèle n'est pas installé dans Ollama —
+  faites `ollama pull <nom>` (ex. `ollama pull mistral-nemo`) ; il apparaîtra ensuite dans le sélecteur.
+- **502 au démarrage** : le frontend attend désormais que le backend soit *healthy* (les imports lourds
+  du RAG sont chargés en arrière-plan pour que l'API réponde vite). Si cela persiste, `docker compose ps`
+  doit montrer `backend` *healthy* ; sinon regardez `docker compose logs -f backend`.
 - **Réponses lentes** : voir *Performances* — sur CPU, un 7B reste lent ; privilégiez le GPU ou un modèle plus léger.
 - **Inscription impossible** : assurez-vous que le conteneur `db` est « healthy » (`docker compose ps`).
 - **Port déjà utilisé** : modifiez les ports publiés dans `docker-compose.yml` (`8080`, `8000`, `5432`).

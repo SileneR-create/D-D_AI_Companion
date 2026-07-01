@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.config import API_TITLE, API_VERSION, CORS_ORIGINS, WARMUP_ON_STARTUP
+from backend.config import API_TITLE, API_VERSION, CORS_ORIGINS, JWT_SECRET, WARMUP_ON_STARTUP
 from backend.db import init_db
 from backend.deps import get_current_user
 from backend.routes import arsenal, auth, characters, forge, gamemaster, library, rules, solo
@@ -38,6 +38,9 @@ async def _startup_heavy() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Demarrage D&D AI Companion API...")
+    if JWT_SECRET == "dev-secret-a-changer-en-production":
+        print("!!! SECURITE : JWT_SECRET par defaut utilise. Definis la variable d'env "
+              "JWT_SECRET (valeur aleatoire longue) en production, sinon les jetons sont falsifiables.")
     init_db()  # rapide et indispensable a l'auth -> on l'attend.
     asyncio.create_task(_startup_heavy())  # le reste ne bloque pas le service.
     print("API prete (services lourds en cours de chargement).")

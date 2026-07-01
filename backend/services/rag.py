@@ -6,7 +6,9 @@ Optimisations vitesse :
 - Modele d'embeddings rapide (MiniLM multilingue).
 """
 import asyncio
+import ipaddress
 import json
+import socket
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
 
@@ -204,10 +206,26 @@ def _crawl_blocking(start_url: str, max_pages: int) -> RagSource:
     return src
 
 
+def _reject_internal_host(url: str) -> None:
+    """Protection anti-SSRF : refuse les hotes internes (loopback, reseaux prives,
+    link-local, metadata cloud). Empeche un utilisateur authentifie de faire
+    interroger par le serveur des services internes via l'aspiration de site."""
+    host = urlparse(url).hostname or ""
+    try:
+        addrs = socket.getaddrinfo(host, None)
+    except socket.gaierror:
+        raise ValueError("Hote introuvable.")
+    for info in addrs:
+        ip = ipaddress.ip_address(info[4][0])
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast:
+            raise ValueError("Adresse interne interdite (protection anti-SSRF).")
+
+
 async def crawl_site(start_url: str, max_pages: int | None = None) -> RagSource:
     """Aspire un site entier (meme domaine) et l'indexe dans le RAG."""
     if not start_url.startswith(("http://", "https://")):
         raise ValueError("URL invalide (doit commencer par http:// ou https://).")
+    _reject_internal_host(start_url)
     limit = min(max_pages or RAG_CRAWL_MAX_PAGES, 200)
     return await asyncio.get_event_loop().run_in_executor(None, _crawl_blocking, start_url, limit)
 
